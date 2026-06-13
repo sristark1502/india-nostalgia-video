@@ -52,12 +52,28 @@ def create_video():
             for chunk in resp.iter_content(8192):
                 f.write(chunk)
 
+    image1_b64 = data.get('image1_b64')
+    image2_b64 = data.get('image2_b64')
+
     try:
-        download(image1_url, img1)
-        download(image2_url, img2)
-        download(music_url,  music)
+        # Support both base64 and URL for images
+        if image1_b64:
+            import base64 as b64lib
+            with open(img1, 'wb') as f:
+                f.write(b64lib.b64decode(image1_b64))
+        else:
+            download(image1_url, img1)
+
+        if image2_b64:
+            import base64 as b64lib
+            with open(img2, 'wb') as f:
+                f.write(b64lib.b64decode(image2_b64))
+        else:
+            download(image2_url, img2)
+
+        download(music_url, music)
     except Exception as e:
-        return jsonify({'error': f'Download failed: {str(e)}'}), 500
+        return jsonify({'error': f'Download/decode failed: {str(e)}'}), 500
 
     # ── Build FFmpeg filter ──────────────────────────────────────────────────
     # Escape quotes for drawtext
@@ -127,3 +143,4 @@ def create_video():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
+
