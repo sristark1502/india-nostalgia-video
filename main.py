@@ -33,8 +33,11 @@ def create_video():
     text1      = data.get('text1', '2026')
     text2      = data.get('text2', '2017')
 
-    if not all([image1_url, image2_url, music_url]):
-        return jsonify({'error': 'image1_url, image2_url, and music_url are all required'}), 400
+    image1_b64 = data.get('image1_b64')
+    image2_b64 = data.get('image2_b64')
+
+    if not ((image1_url or image1_b64) and (image2_url or image2_b64) and music_url):
+        return jsonify({'error': 'Provide (image1_url or image1_b64), (image2_url or image2_b64), and music_url'}), 400
 
     tmp    = f'/tmp/{uuid.uuid4()}'
     img1   = f'{tmp}/img1.jpg'
@@ -51,9 +54,6 @@ def create_video():
         with open(dest, 'wb') as f:
             for chunk in resp.iter_content(8192):
                 f.write(chunk)
-
-    image1_b64 = data.get('image1_b64')
-    image2_b64 = data.get('image2_b64')
 
     try:
         # Support both base64 and URL for images
@@ -143,4 +143,3 @@ def create_video():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
-
